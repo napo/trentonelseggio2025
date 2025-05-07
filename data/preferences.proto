@@ -1,0 +1,15 @@
+syntax = "proto3";
+message Preferences {
+  int32 id_section = 1;
+  int32 id_district = 2;
+  string supportedmayor = 3;
+  string group = 4;
+  string lastname = 5;
+  string name = 6;
+  string nickname = 7;
+  int32 votes = 8;
+}
+
+message PreferencesList {
+  repeated Preferences items = 1;
+}

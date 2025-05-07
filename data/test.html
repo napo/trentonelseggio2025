@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Visualizzatore PBF</title>
+  <script src="https://unpkg.com/protobufjs/dist/protobuf.min.js"></script>
+  <style>
+    body {
+      font-family: monospace;
+      background: #f9f9f9;
+      padding: 1em;
+    }
+    select {
+      font-family: monospace;
+      font-size: 1em;
+      padding: 0.4em;
+    }
+    pre {
+      background: #fff;
+      padding: 1em;
+      border: 1px solid #ccc;
+      overflow: auto;
+      max-height: 80vh;
+    }
+  </style>
+</head>
+<body>
+  <h1>Visualizzatore contenuti .pbf</h1>
+
+  <label for="pbf-select">Scegli un file:</label>
+  <select id="pbf-select">
+    <option value="">-- seleziona un file --</option>
+    <option value="preferences_mayors">preferences_mayors</option>
+    <option value="preferences_groups">preferences_groups</option>
+    <option value="preferences_candidates">preferences_candidates</option>
+  </select>
+
+  <pre id="output">Seleziona un file per visualizzare i dati.</pre>
+
+  <script>
+    const select = document.getElementById("pbf-select");
+    const output = document.getElementById("output");
+
+    select.addEventListener("change", () => {
+      const base = select.value;
+      if (!base) return;
+
+      const protoUrl = `${base}.proto`;
+      const pbfUrl = `${base}.pbf`;
+      const messageListName = `${capitalize(base)}List`;
+
+      output.textContent = "Caricamento...";
+
+      protobuf.load(protoUrl)
+        .then(root => {
+          const MessageList = root.lookupType(messageListName);
+          return fetch(pbfUrl)
+            .then(res => res.arrayBuffer())
+            .then(buffer => {
+              const decoded = MessageList.decode(new Uint8Array(buffer));
+              const object = MessageList.toObject(decoded, {
+                longs: String,
+                enums: String,
+                bytes: String,
+                defaults: true,
+                arrays: true,
+                objects: true,
+              });
+              output.textContent = JSON.stringify(object, null, 2);
+            });
+        })
+        .catch(err => {
+          console.error(err);
+          output.textContent = "Errore: " + err.message;
+        });
+    });
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+  </script>
+</body>
+</html>

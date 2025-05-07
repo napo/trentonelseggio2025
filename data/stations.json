@@ -1,0 +1,386 @@
+[
+  {
+    "id_section": 40,
+    "station": "SCUOLA ELEMENTARE CLARINA"
+  },
+  {
+    "id_section": 22,
+    "station": "SCUOLA ELEMENTARE F. CRISPI"
+  },
+  {
+    "id_section": 34,
+    "station": "SCUOLA ELEMENTARE NICOLODI"
+  },
+  {
+    "id_section": 32,
+    "station": "SCUOLA ELEMENTARE NICOLODI"
+  },
+  {
+    "id_section": 44,
+    "station": "SCUOLA ELEMENTARE M. BIANCA"
+  },
+  {
+    "id_section": 52,
+    "station": "SCUOLA ELEMENTARE G.A.TOMASI"
+  },
+  {
+    "id_section": 37,
+    "station": "SCUOLA ELEMENTARE CLARINA"
+  },
+  {
+    "id_section": 17,
+    "station": "SCUOLA ELEMENTARE F. CRISPI"
+  },
+  {
+    "id_section": 8,
+    "station": "SCUOLA ELEMENTARE BELLESINI"
+  },
+  {
+    "id_section": 6,
+    "station": "SCUOLA ELEMENTARE R. SANZIO"
+  },
+  {
+    "id_section": 36,
+    "station": "SCUOLA ELEMENTARE NICOLODI"
+  },
+  {
+    "id_section": 4,
+    "station": "SCUOLA ELEMENTARE R. SANZIO"
+  },
+  {
+    "id_section": 18,
+    "station": "SCUOLA ELEMENTARE F. CRISPI"
+  },
+  {
+    "id_section": 3,
+    "station": "SCUOLA ELEMENTARE R. SANZIO"
+  },
+  {
+    "id_section": 5,
+    "station": "SCUOLA ELEMENTARE R. SANZIO"
+  },
+  {
+    "id_section": 10,
+    "station": "SCUOLA ELEMENTARE BELLESINI"
+  },
+  {
+    "id_section": 35,
+    "station": "SCUOLA ELEMENTARE NICOLODI"
+  },
+  {
+    "id_section": 9,
+    "station": "SCUOLA ELEMENTARE BELLESINI"
+  },
+  {
+    "id_section": 33,
+    "station": "SCUOLA ELEMENTARE NICOLODI"
+  },
+  {
+    "id_section": 25,
+    "station": "SCUOLA ELEMENTARE D. SAVIO"
+  },
+  {
+    "id_section": 20,
+    "station": "SCUOLA ELEMENTARE F. CRISPI"
+  },
+  {
+    "id_section": 23,
+    "station": "SCUOLA ELEMENTARE F. CRISPI"
+  },
+  {
+    "id_section": 2,
+    "station": "SCUOLA ELEMENTARE R. SANZIO"
+  },
+  {
+    "id_section": 31,
+    "station": "SCUOLA ELEMENTARE D. SAVIO"
+  },
+  {
+    "id_section": 16,
+    "station": "SCUOLA ELEMENTARE BELLESINI"
+  },
+  {
+    "id_section": 45,
+    "station": "SCUOLA ELEMENTARE M. BIANCA"
+  },
+  {
+    "id_section": 1,
+    "station": "SCUOLA ELEMENTARE R. SANZIO"
+  },
+  {
+    "id_section": 14,
+    "station": "CENTRO SOCIALE (EX ELEMENTARI)"
+  },
+  {
+    "id_section": 13,
+    "station": "CENTRO SOCIALE (EX ELEMENTARI)"
+  },
+  {
+    "id_section": 12,
+    "station": "CENTRO SOCIALE (EX ELEMENTARI)"
+  },
+  {
+    "id_section": 7,
+    "station": "SCUOLA ELEMENTARE BELLESINI"
+  },
+  {
+    "id_section": 76,
+    "station": "CENTRO CIVICO SARDAGNA"
+  },
+  {
+    "id_section": 24,
+    "station": "SCUOLA ELEMENTARE D. SAVIO"
+  },
+  {
+    "id_section": 28,
+    "station": "SCUOLA ELEMENTARE D. SAVIO"
+  },
+  {
+    "id_section": 21,
+    "station": "SCUOLA ELEMENTARE F. CRISPI"
+  },
+  {
+    "id_section": 27,
+    "station": "SCUOLA ELEMENTARE D. SAVIO"
+  },
+  {
+    "id_section": 29,
+    "station": "SCUOLA ELEMENTARE D. SAVIO"
+  },
+  {
+    "id_section": 41,
+    "station": "SCUOLA ELEMENTARE CLARINA"
+  },
+  {
+    "id_section": 11,
+    "station": "SCUOLA ELEMENTARE BELLESINI"
+  },
+  {
+    "id_section": 46,
+    "station": "SCUOLA ELEMENTARE M. BIANCA"
+  },
+  {
+    "id_section": 43,
+    "station": "SCUOLA ELEMENTARE CLARINA"
+  },
+  {
+    "id_section": 39,
+    "station": "SCUOLA ELEMENTARE CLARINA"
+  },
+  {
+    "id_section": 94,
+    "station": "SCUOLA ELEMENTARE BELLESINI"
+  },
+  {
+    "id_section": 38,
+    "station": "SCUOLA ELEMENTARE CLARINA"
+  },
+  {
+    "id_section": 63,
+    "station": "CENTRO CIVICO COGNOLA"
+  },
+  {
+    "id_section": 15,
+    "station": "SCUOLA ELEMENTARE BELLESINI"
+  },
+  {
+    "id_section": 47,
+    "station": "SCUOLA ELEMENTARE M. BIANCA"
+  },
+  {
+    "id_section": 26,
+    "station": "SCUOLA ELEMENTARE D. SAVIO"
+  },
+  {
+    "id_section": 19,
+    "station": "SCUOLA ELEMENTARE F. CRISPI"
+  },
+  {
+    "id_section": 30,
+    "station": "SCUOLA ELEMENTARE D. SAVIO"
+  },
+  {
+    "id_section": 42,
+    "station": "SCUOLA ELEMENTARE CLARINA"
+  },
+  {
+    "id_section": 66,
+    "station": "CENTRO CIVICO COGNOLA"
+  },
+  {
+    "id_section": 86,
+    "station": "CENTRO CIVICO GARDOLO"
+  },
+  {
+    "id_section": 97,
+    "station": "CENTRO CIVICO COGNOLA"
+  },
+  {
+    "id_section": 59,
+    "station": "CENTRO CIVICO POVO"
+  },
+  {
+    "id_section": 70,
+    "station": "SCUOLA ELEMENTARE MARTIGNANO"
+  },
+  {
+    "id_section": 92,
+    "station": "EDIFICIO PLURIUSO(EX CENTRO CIVICO)"
+  },
+  {
+    "id_section": 88,
+    "station": "EDIFICIO PLURIUSO(EX CENTRO CIVICO)"
+  },
+  {
+    "id_section": 84,
+    "station": "CENTRO CIVICO GARDOLO"
+  },
+  {
+    "id_section": 72,
+    "station": "CENTRO CIVICO RAVINA"
+  },
+  {
+    "id_section": 55,
+    "station": "EX CASERMA DEI CARABINIERI"
+  },
+  {
+    "id_section": 91,
+    "station": "EDIFICIO PLURIUSO(EX CENTRO CIVICO)"
+  },
+  {
+    "id_section": 89,
+    "station": "EDIFICIO PLURIUSO(EX CENTRO CIVICO)"
+  },
+  {
+    "id_section": 90,
+    "station": "EDIFICIO PLURIUSO(EX CENTRO CIVICO)"
+  },
+  {
+    "id_section": 85,
+    "station": "CENTRO CIVICO GARDOLO"
+  },
+  {
+    "id_section": 81,
+    "station": "CENTRO CIVICO MEANO"
+  },
+  {
+    "id_section": 87,
+    "station": "EDIFICIO PLURIUSO(EX CENTRO CIVICO)"
+  },
+  {
+    "id_section": 93,
+    "station": "EDIFICIO PLURIUSO(EX CENTRO CIVICO)"
+  },
+  {
+    "id_section": 67,
+    "station": "CENTRO CIVICO COGNOLA"
+  },
+  {
+    "id_section": 68,
+    "station": "SCUOLA ELEMENTARE MARTIGNANO"
+  },
+  {
+    "id_section": 69,
+    "station": "SCUOLA ELEMENTARE MARTIGNANO"
+  },
+  {
+    "id_section": 71,
+    "station": "SCUOLA ELEMENTARE MARTIGNANO"
+  },
+  {
+    "id_section": 65,
+    "station": "CENTRO CIVICO COGNOLA"
+  },
+  {
+    "id_section": 64,
+    "station": "CENTRO CIVICO COGNOLA"
+  },
+  {
+    "id_section": 50,
+    "station": "SCUOLA ELEMENTARE G.A.TOMASI"
+  },
+  {
+    "id_section": 51,
+    "station": "SCUOLA ELEMENTARE G.A.TOMASI"
+  },
+  {
+    "id_section": 53,
+    "station": "SCUOLA ELEMENTARE G.A.TOMASI"
+  },
+  {
+    "id_section": 61,
+    "station": "CENTRO CIVICO POVO"
+  },
+  {
+    "id_section": 60,
+    "station": "CENTRO CIVICO POVO"
+  },
+  {
+    "id_section": 62,
+    "station": "CENTRO CIVICO POVO"
+  },
+  {
+    "id_section": 58,
+    "station": "EX CASERMA DEI CARABINIERI"
+  },
+  {
+    "id_section": 56,
+    "station": "EX CASERMA DEI CARABINIERI"
+  },
+  {
+    "id_section": 75,
+    "station": "UFFICIO COMUNALE ROMAGNANO"
+  },
+  {
+    "id_section": 54,
+    "station": "EX CASERMA DEI CARABINIERI"
+  },
+  {
+    "id_section": 57,
+    "station": "EX CASERMA DEI CARABINIERI"
+  },
+  {
+    "id_section": 98,
+    "station": "CENTRO CIVICO SOPRAMONTE"
+  },
+  {
+    "id_section": 78,
+    "station": "CENTRO CIVICO SOPRAMONTE"
+  },
+  {
+    "id_section": 77,
+    "station": "CENTRO CIVICO SOPRAMONTE"
+  },
+  {
+    "id_section": 79,
+    "station": "CENTRO CIVICO CADINE"
+  },
+  {
+    "id_section": 80,
+    "station": "CENTRO CIVICO CADINE"
+  },
+  {
+    "id_section": 96,
+    "station": "CENTRO CIVICO MEANO"
+  },
+  {
+    "id_section": 83,
+    "station": "CENTRO CIVICO VIGO MEANO"
+  },
+  {
+    "id_section": 82,
+    "station": "CENTRO CIVICO MEANO"
+  },
+  {
+    "id_section": 73,
+    "station": "CENTRO CIVICO RAVINA"
+  },
+  {
+    "id_section": 74,
+    "station": "CENTRO CIVICO RAVINA"
+  },
+  {
+    "id_section": 95,
+    "station": "UFFICIO COMUNALE ROMAGNANO"
+  }
+]

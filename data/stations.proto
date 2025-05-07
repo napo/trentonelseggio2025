@@ -1,0 +1,9 @@
+syntax = "proto3";
+message Stations {
+  int32 id_section = 1;
+  string station = 2;
+}
+
+message StationsList {
+  repeated Stations items = 1;
+}

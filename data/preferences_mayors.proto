@@ -1,0 +1,16 @@
+syntax = "proto3";
+message Preferences_mayors {
+  int32 id_section = 1;
+  int32 id_district = 2;
+  string district = 3;
+  int32 blanks = 4;
+  int32 canceled = 5;
+  int32 disputed = 6;
+  string lastname = 7;
+  string name = 8;
+  int32 votes = 9;
+}
+
+message Preferences_mayorsList {
+  repeated Preferences_mayors items = 1;
+}
