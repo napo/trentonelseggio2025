@@ -1,314 +1,320 @@
 <!DOCTYPE html>
 <html lang="it">
 
-<head>
-  <meta charset="UTF-8" />
-  <title>Trento nel seggio 2025</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- Bootstrap -->
-  <link href="assets/vendor/bootstrap/bootstrap.min.css" rel="stylesheet" />
-
-  <link rel="stylesheet" href="assets/vendor/maplibre-gl/maplibre-gl.css" crossorigin="anonymous">
-  <script src="assets/vendor/maplibre-gl/maplibre-gl.js" crossorigin="anonymous"></script>
-  <script src="assets/vendor/pmtiles/pmtiles.js"></script>
-
-  <!-- ProtobufJS -->
-  <script src="assets/vendor/protobufjs/protobuf.min.js"></script>
-
-  <style>
-    body,
-    html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    header,
-    footer {
-      background-color: #f8f9fa;
-      padding: 10px;
-      text-align: center;
-      border-bottom: 1px solid #ddd;
-    }
-
-    footer {
-      border-top: 1px solid #ddd;
-      border-bottom: none;
-    }
-
-    main {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      position: relative;
-    }
-
-    #sidebar-container {
-      display: flex;
-      flex-direction: column;
-      background: #e9ecef;
-      border-right: 1px solid #ccc;
-      z-index: 20;
-    }
-
-    #sidebar-toggle {
-      background: #007bff;
-      color: white;
-      border: none;
-      width: 40px;
-      padding: 10px 0;
-      cursor: pointer;
-    }
-
-    #sidebar {
-      width: 300px;
-      background: #f8f9fa;
-      border-right: 1px solid #ddd;
-      overflow-y: auto;
-      padding: 1rem;
-      transition: max-width 0.3s ease, padding 0.3s ease;
-      max-width: 300px;
-    }
-
-    #sidebar.hidden {
-      max-width: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-
-    #map {
-      flex-grow: 1;
-      height: 100%;
-      width: 100%;
-      transition: all 0.3s ease;
-    }
-
-    input:disabled {
-      background-color: #e9ecef;
-    }
-  </style>
-</head>
-
-<body>
-  <header>
-    <div class="d-flex justify-content-between align-items-center">
-      <h1 class="h5 mb-0">Sistema di visualizzazione sezioni elettorali</h1>
-      <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#infoModal">Menu</button>
-    </div>
-  </header>
-
-  <main>
-    <div id="sidebar-container">
-      <button id="sidebar-toggle">☰</button>
-    </div>
-
-    <div id="sidebar">
-      <h2 class="h6 mt-3">Mappa sezioni per candidato</h2>
-      <div id="section-count" class="alert alert-info small d-none"></div>
-      <div class="mb-3">
-        <label class="form-label">Scrivi il nome (sindaco, lista o candidato):</label>
-        <input type="text" id="mayor-input" class="form-control mt-2" list="mayor-datalist" placeholder="Cerca sindaco...">
-        <datalist id="mayor-datalist"></datalist>
-
-        <input type="text" id="list-input" class="form-control mt-2" list="list-datalist" placeholder="Cerca lista...">
-        <datalist id="list-datalist"></datalist>
-
-        <input type="text" id="candidate-input" class="form-control mt-2" list="candidate-datalist" placeholder="Cerca candidato...">
-        <datalist id="candidate-datalist"></datalist>
-
-        <button id="reset-button" class="btn btn-secondary mt-2">Reset</button>
-      </div>
-    </div>
-
-    <div id="map"></div>
-  </main>
-
-  <footer>
-    <small>&copy; 2025 Comune di Trento - Progetto Mappa Voto per Sezioni</small>
-  </footer>
-
-  <!-- Modal -->
-  <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="infoModalLabel">Informazioni</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
-        </div>
-        <div class="modal-body">
-          Ciao Mondo!
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-  <script>
-    const sidebar = document.getElementById("sidebar");
-    const sidebarToggle = document.getElementById("sidebar-toggle");
-
-    sidebarToggle.addEventListener("click", () => {
-      const isHidden = sidebar.classList.toggle("hidden");
-      sidebarToggle.textContent = isHidden ? "❯" : "☰";
-      setTimeout(() => map.resize(), 310);
-    });
-
-    const protocol = new pmtiles.Protocol();
-    maplibregl.addProtocol("pmtiles", protocol.tile);
-    const map = new maplibregl.Map({
-      container: "map",
-      style: "https://tiles.openfreemap.org/styles/liberty",
-      center: [11.121, 46.07],
-      zoom: 13
-    });
-
-    let allData = [], votesByCandidate = {}, candidateMeta = {}, mapReady = false, initialViewSet = false;
-    let uniqueMayors = new Set(), uniqueLists = new Set(), uniqueCandidates = new Set();
-
-    map.on("load", () => {
-      map.addSource("sections", {
-        type: "vector",
-        url: "pmtiles://sections.pmtiles"
-      });
-
-      map.addLayer({
-        id: "sezioni",
-        type: "circle",
-        source: "sections",
-        "source-layer": "sections",
-        paint: {
-          "circle-color": "#ccc",
-          "circle-opacity": 0.6,
-          "circle-radius": 6
-        },
-        filter: ["!", ["has", "__nonexistent__"]]
-      });
-
-      map.on("sourcedata", (e) => {
-        if (e.sourceId === "sections" && e.isSourceLoaded && !initialViewSet) {
-          const features = map.querySourceFeatures("sections", { sourceLayer: "sections" });
-          if (features.length > 0) {
-            const coords = features.map(f => f.geometry.coordinates);
-            const bounds = coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(c, c));
-            map.fitBounds(bounds, { padding: 20 });
-            initialViewSet = true;
-          }
-        }
-      });
-
-      mapReady = true;
-    });
-
-    protobuf.load("preferences_candidates.proto").then(root => {
-      const Msg = root.lookupType("Preferences_candidatesList");
-      return fetch("preferences_candidates.pbf")
-        .then(res => res.arrayBuffer())
-        .then(buf => {
-          const decoded = Msg.decode(new Uint8Array(buf));
-          allData = decoded.items.filter(item => item.votes > 0);
-
-          allData.forEach(item => {
-            const cid = item.idCandidate;
-            if (!votesByCandidate[cid]) votesByCandidate[cid] = {};
-            votesByCandidate[cid][item.idSection] = item.votes;
-            candidateMeta[cid] = {
-              id: cid,
-              name: `${item.lastname} ${item.name}`,
-              list: item.group,
-              mayor: item.supportedmayor,
-              group: item.group
-            };
-            uniqueMayors.add(item.supportedmayor);
-            uniqueLists.add(item.group);
-            uniqueCandidates.add(`${item.lastname} ${item.name}`);
-          });
-
-          populateInputs();
-        });
-    });
-
-    function populateInputs() {
-      const mayorDatalist = document.getElementById("mayor-datalist");
-      const listDatalist = document.getElementById("list-datalist");
-      const candidateDatalist = document.getElementById("candidate-datalist");
-
-      mayorDatalist.innerHTML = "";
-      listDatalist.innerHTML = "";
-      candidateDatalist.innerHTML = "";
-
-      [...uniqueMayors].sort().forEach(name => mayorDatalist.appendChild(new Option(name, name)));
-      [...uniqueLists].sort().forEach(name => listDatalist.appendChild(new Option(name, name)));
-      [...uniqueCandidates].sort().forEach(name => candidateDatalist.appendChild(new Option(name, name)));
-    }
-
-    function updateMapByFilter(type, value) {
-      if (!value) return;
-      let filtered = [];
-
-      if (type === "mayor") {
-        filtered = allData.filter(i => i.supportedmayor === value);
-      } else if (type === "list") {
-        filtered = allData.filter(i => i.group === value);
-      } else if (type === "candidate") {
-        filtered = allData.filter(i => `${i.lastname} ${i.name}` === value);
+  <head>
+    <meta charset="UTF-8" />
+    <title>Trento nel seggio 2025</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="assets/vendor/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/vendor/maplibre-gl/maplibre-gl.css" crossorigin="anonymous">
+    <script src="assets/vendor/maplibre-gl/maplibre-gl.js" crossorigin="anonymous"></script>
+    <script src="assets/vendor/pmtiles/pmtiles.js"></script>
+    <script src="assets/vendor/protobufjs/protobuf.min.js"></script>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
       }
 
-      const sectionVotes = {};
-      filtered.forEach(i => {
-        sectionVotes[i.idSection] = (sectionVotes[i.idSection] || 0) + i.votes;
+      header,
+      footer {
+        background-color: #f8f9fa;
+        padding: 10px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+      }
+
+      footer {
+        border-top: 1px solid #ddd;
+        border-bottom: none;
+      }
+
+      main {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+        position: relative;
+      }
+
+      #sidebar-container {
+        display: flex;
+        flex-direction: column;
+        background: #e9ecef;
+        border-right: 1px solid #ccc;
+        z-index: 20;
+      }
+
+      #sidebar-toggle {
+        background: #007bff;
+        color: white;
+        border: none;
+        width: 40px;
+        padding: 10px 0;
+        cursor: pointer;
+      }
+
+      #sidebar {
+        width: 300px;
+        background: #f8f9fa;
+        border-right: 1px solid #ddd;
+        overflow-y: auto;
+        padding: 1rem;
+        transition: max-width 0.3s ease, padding 0.3s ease;
+        max-width: 300px;
+      }
+
+      #sidebar.hidden {
+        max-width: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      #map {
+        flex-grow: 1;
+        height: 100%;
+        width: 100%;
+        transition: all 0.3s ease;
+      }
+
+      input:disabled {
+        background-color: #e9ecef;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="h5 mb-0">Sistema di visualizzazione sezioni elettorali</h1>
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#infoModal"
+          aria-label="Apri il menu informazioni">Menu</button>
+      </div>
+    </header>
+
+    <main>
+      <div id="sidebar-container">
+        <button id="sidebar-toggle" aria-label="Mostra/Nascondi sidebar">☰</button>
+      </div>
+
+      <div id="sidebar">
+        <h2 class="h6 mt-3">Mappa sezioni per candidato</h2>
+        <div id="candidate-info" class="alert alert-light small"></div>
+        <div class="mb-3">
+          <label class="form-label">Scrivi il nome (sindaco, lista o candidato):</label>
+          <input type="text" id="mayor-input" class="form-control mt-2" list="mayor-datalist"
+            placeholder="Cerca sindaco...">
+          <datalist id="mayor-datalist"></datalist>
+          <input type="text" id="list-input" class="form-control mt-2" list="list-datalist"
+            placeholder="Cerca lista...">
+          <datalist id="list-datalist"></datalist>
+          <input type="text" id="candidate-input" class="form-control mt-2" list="candidate-datalist"
+            placeholder="Cerca candidato...">
+          <datalist id="candidate-datalist"></datalist>
+          <button id="reset-button" class="btn btn-secondary mt-2">Reset</button>
+        </div>
+      </div>
+
+      <div id="map"></div>
+    </main>
+
+    <footer>
+      <small>&copy; 2025 Comune di Trento - Progetto Mappa Voto per Sezioni</small>
+    </footer>
+
+    <!-- Modal -->
+    <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="infoModalLabel">Informazioni</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+          </div>
+          <div class="modal-body">Ciao Mondo!</div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+      const sidebar = document.getElementById("sidebar");
+      const sidebarToggle = document.getElementById("sidebar-toggle");
+
+      sidebarToggle.addEventListener("click", () => {
+        const isHidden = sidebar.classList.toggle("hidden");
+        sidebarToggle.textContent = isHidden ? "❯" : "☰";
+        setTimeout(() => map.resize(), 310);
       });
 
-      const maxVotes = Math.max(...Object.values(sectionVotes));
-      const stops = Object.entries(sectionVotes).map(([id, v]) => [parseInt(id), `rgba(0, 0, 255, ${(v / maxVotes).toFixed(2)})`]);
-
-      map.setPaintProperty("sezioni", "circle-color", [
-        "match",
-        ["get", "id_section"],
-        ...stops.flat(),
-        "#ccc"
-      ]);
-
-      map.setFilter("sezioni", ["in", "id_section", ...Object.keys(sectionVotes).map(k => parseInt(k))]);
-
-      document.getElementById("mayor-input").disabled = type !== "mayor";
-      document.getElementById("list-input").disabled = type !== "list";
-      document.getElementById("candidate-input").disabled = type !== "candidate";
-    }
-
-    document.getElementById("reset-button").addEventListener("click", () => {
-      map.setPaintProperty("sezioni", "circle-color", "#ccc");
-      map.setFilter("sezioni", ["!", ["has", "__nonexistent__"]]);
-      document.getElementById("mayor-input").value = "";
-      document.getElementById("list-input").value = "";
-      document.getElementById("candidate-input").value = "";
-      document.getElementById("mayor-input").disabled = false;
-      document.getElementById("list-input").disabled = false;
-      document.getElementById("candidate-input").disabled = false;
-    });
-
-    ["mayor", "list", "candidate"].forEach(type => {
-      document.getElementById(`${type}-input`).addEventListener("input", e => {
-        updateMapByFilter(type, e.target.value);
+      const protocol = new pmtiles.Protocol();
+      maplibregl.addProtocol("pmtiles", protocol.tile);
+      const map = new maplibregl.Map({
+        container: "map",
+        style: "https://tiles.openfreemap.org/styles/liberty",
+        center: [11.121, 46.07],
+        zoom: 13
       });
-    });
 
-    map.on("mouseenter", "sezioni", (e) => {
-      map.getCanvas().style.cursor = "pointer";
-      const props = e.features[0].properties;
-      const sid = parseInt(props.id_section);
+      let allData = [], votesByCandidate = {}, candidateMeta = {}, mapReady = false, initialViewSet = false;
+      let uniqueMayors = new Set(), uniqueLists = new Set(), uniqueCandidates = new Set();
+      let activePopup = null;
 
-      const match = allData.find(i => i.idSection === sid);
-      if (!match) return;
-      const name = `${match.lastname} ${match.name}`;
+      map.on("load", () => {
+        map.addSource("sections", {
+          type: "vector",
+          url: "pmtiles://sections.pmtiles"
+        });
 
-      const html = `
+        map.addLayer({
+          id: "sezioni",
+          type: "circle",
+          source: "sections",
+          "source-layer": "sections",
+          paint: {
+            "circle-color": "#ccc",
+            "circle-opacity": 0.6,
+            "circle-radius": 6
+          },
+          filter: ["!", ["has", "__nonexistent__"]]
+        });
+
+        map.on("sourcedata", (e) => {
+          if (e.sourceId === "sections" && e.isSourceLoaded && !initialViewSet) {
+            const features = map.querySourceFeatures("sections", { sourceLayer: "sections" });
+            if (features.length > 0) {
+              const coords = features.map(f => f.geometry.coordinates);
+              const bounds = coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]));
+              map.fitBounds(bounds, { padding: 20 });
+              initialViewSet = true;
+            }
+          }
+        });
+
+        map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
+        mapReady = true;
+      });
+
+      protobuf.load("preferences_candidates.proto").then(root => {
+        const Msg = root.lookupType("Preferences_candidatesList");
+        return fetch("preferences_candidates.pbf")
+          .then(res => res.arrayBuffer())
+          .then(buf => {
+            const decoded = Msg.decode(new Uint8Array(buf));
+            allData = decoded.items.filter(item => item.votes > 0);
+
+            allData.forEach(item => {
+              const cid = item.idCandidate;
+              if (!votesByCandidate[cid]) votesByCandidate[cid] = {};
+              votesByCandidate[cid][item.idSection] = item.votes;
+              candidateMeta[cid] = {
+                id: cid,
+                name: `${item.lastname} ${item.name}`,
+                list: item.group,
+                mayor: item.supportedmayor,
+                group: item.group
+              };
+              uniqueMayors.add(item.supportedmayor);
+              uniqueLists.add(item.group);
+              uniqueCandidates.add(`${item.lastname} ${item.name}`);
+            });
+
+            populateInputs();
+          });
+      });
+
+      function populateInputs() {
+        const mayorDatalist = document.getElementById("mayor-datalist");
+        const listDatalist = document.getElementById("list-datalist");
+        const candidateDatalist = document.getElementById("candidate-datalist");
+
+        mayorDatalist.innerHTML = "";
+        listDatalist.innerHTML = "";
+        candidateDatalist.innerHTML = "";
+
+        [...uniqueMayors].sort().forEach(name => mayorDatalist.appendChild(new Option(name, name)));
+        [...uniqueLists].sort().forEach(name => listDatalist.appendChild(new Option(name, name)));
+        [...uniqueCandidates].sort().forEach(name => candidateDatalist.appendChild(new Option(name, name)));
+      }
+
+      function updateMapByFilter(type, value) {
+        if (!value) return;
+        const filtered = allData.filter(i => {
+          return type === "mayor" ? i.supportedmayor === value :
+            type === "list" ? i.group === value :
+              `${i.lastname} ${i.name}` === value;
+        });
+
+        const sectionVotes = {};
+        filtered.forEach(i => {
+          sectionVotes[i.idSection] = (sectionVotes[i.idSection] || 0) + i.votes;
+        });
+
+        if (!Object.keys(sectionVotes).length) return;
+
+        const maxVotes = Math.max(...Object.values(sectionVotes));
+        const stops = Object.entries(sectionVotes).map(([id, v]) => [parseInt(id), `rgba(0, 0, 255, ${(v / maxVotes).toFixed(2)})`]);
+
+        map.setPaintProperty("sezioni", "circle-color", ["match", ["get", "id_section"], ...stops.flat(), "#ccc"]);
+        map.setFilter("sezioni", ["in", "id_section", ...Object.keys(sectionVotes).map(k => parseInt(k))]);
+        // Mostra info riassuntive sotto i filtri
+        const infoBox = document.getElementById("candidate-info");
+
+        if (type === "candidate" && filtered.length > 0) {
+          const item = filtered[0];  // Tutti gli item del candidato avranno gli stessi metadati
+          const totalVotes = filtered.reduce((sum, i) => sum + i.votes, 0);
+          const uniqueSections = new Set(filtered.map(i => i.idSection));
+
+          const allFeatures = map.querySourceFeatures("sections", { sourceLayer: "sections" });
+          const totalSections = allFeatures.length;
+
+          infoBox.innerHTML = `
+      <strong>${item.lastname} ${item.name}</strong><br>
+      Lista: ${item.group}<br>
+      Sindaco: ${item.supportedmayor}<br>
+      Voti totali: ${totalVotes}<br>
+      Sezioni votate: ${uniqueSections.size} su ${new Set(allData.map(i => i.idSection)).size};
+    `;
+        } else {
+          infoBox.innerHTML = "";
+        }
+        document.getElementById("mayor-input").disabled = type !== "mayor";
+        document.getElementById("list-input").disabled = type !== "list";
+        document.getElementById("candidate-input").disabled = type !== "candidate";
+      }
+
+      document.getElementById("reset-button").addEventListener("click", () => {
+        document.getElementById("candidate-info").innerHTML = "";
+        map.setPaintProperty("sezioni", "circle-color", "#ccc");
+        map.setFilter("sezioni", ["!", ["has", "__nonexistent__"]]);
+        ["mayor", "list", "candidate"].forEach(type => {
+          const input = document.getElementById(`${type}-input`);
+          input.value = "";
+          input.disabled = false;
+        });
+      });
+
+      ["mayor", "list", "candidate"].forEach(type => {
+        document.getElementById(`${type}-input`).addEventListener("input", e => {
+          updateMapByFilter(type, e.target.value);
+        });
+      });
+
+      function showPopup(e) {
+        map.getCanvas().style.cursor = "pointer";
+        const props = e.features?.[0]?.properties || e.features?.[0];
+        const sid = parseInt(props.id_section);
+        const match = allData.find(i => i.idSection === sid);
+        if (!match) return;
+        const name = `${match.lastname} ${match.name}`;
+
+        const html = `
         <strong>${props.station} - Sezione ${props.id_section}</strong><br>
         <em>${props.district}</em><br>
         Sindaco: ${match.supportedmayor}<br>
@@ -316,18 +322,20 @@
         Candidato: ${name}<br>
         Voti: ${match.votes}
       `;
-      new maplibregl.Popup({ closeButton: false })
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .addTo(map);
-    });
+        if (activePopup) activePopup.remove();
+        activePopup = new maplibregl.Popup({ closeButton: false })
+          .setLngLat(e.lngLat || e.lngLat)
+          .setHTML(html)
+          .addTo(map);
+      }
 
-    map.on("mouseleave", "sezioni", () => {
-      map.getCanvas().style.cursor = "";
-      const popups = document.getElementsByClassName("maplibregl-popup");
-      while (popups.length) popups[0].remove();
-    });
-  </script>
-</body>
+      map.on("mouseenter", "sezioni", showPopup);
+      map.on("click", "sezioni", showPopup);
+      map.on("mouseleave", "sezioni", () => {
+        map.getCanvas().style.cursor = "";
+        if (activePopup) activePopup.remove();
+      });
+    </script>
+  </body>
 
 </html>
