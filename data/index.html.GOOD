@@ -20,38 +20,19 @@
     #sidebar.hidden { max-width: 0; padding: 0; overflow: hidden; }
     #map { flex-grow: 1; height: 100%; width: 100%; transition: all 0.3s ease; }
     input:disabled { background-color: #e9ecef; }
-    #legend {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      background: rgba(255,255,255,0.9);
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 12px;
-      z-index: 999;
-    }
-    #legend .color-box {
-      display: inline-block;
-      width: 20px;
-      height: 10px;
-      margin-right: 5px;
-    }
   </style>
 </head>
 <body>
   <header>
     <div class="d-flex justify-content-between align-items-center">
       <h1 class="h5 mb-0">Sistema di visualizzazione sezioni elettorali</h1>
-      <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#infoModal" aria-label="Apri il menu informazioni">Menu</button>
+      <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#infoModal">Menu</button>
     </div>
   </header>
-
   <main>
     <div id="sidebar-container">
-      <button id="sidebar-toggle" aria-label="Mostra/Nascondi sidebar">☰</button>
+      <button id="sidebar-toggle">☰</button>
     </div>
-
     <div id="sidebar">
       <h2 class="h6 mt-3">Mappa sezioni per candidato</h2>
       <div class="mb-3">
@@ -66,33 +47,11 @@
       </div>
       <div id="candidate-info" class="alert alert-light small"></div>
     </div>
-
     <div id="map"></div>
-    
-      <div><span class="color-box" style="background:hsl(240, 100%, 50%)"></span> voti medi</div>
-      <div><span class="color-box" style="background:hsl(240, 100%, 25%)"></span> molti voti</div>
-    </div>
   </main>
-
   <footer>
-    <small>&copy; 2025 Comune di Trento - Progetto Mappa Voto per Sezioni</small>
+    <small>&copy; 2025 Comune di Trento</small>
   </footer>
-
-  <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="infoModalLabel">Informazioni</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
-        </div>
-        <div class="modal-body">Ciao Mondo!</div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
   <script>
     const sidebar = document.getElementById("sidebar");
@@ -112,152 +71,185 @@
       zoom: 13
     });
 
-    let allData = [], votesByCandidate = {}, candidateMeta = {}, mapReady = false, initialViewSet = false;
-    let uniqueMayors = new Set(), uniqueLists = new Set(), uniqueCandidates = new Set();
+    let hoverPopup = null;
+    let currentCandidateId = null;
+    const votesByCandidate = {};
+    const candidateMeta = {};
+    let allData = [], uniqueMayors = new Set(), uniqueLists = new Set(), uniqueCandidates = new Set();
 
     map.on("load", () => {
+
+      const candidateInfo = document.getElementById("candidate-info");
+
+      function updateMapByFilter(type, value) {
+        if (!value) return;
+
+        const filtered = allData.filter(i => {
+          return type === "mayor" ? i.supportedmayor === value :
+                 type === "list" ? i.group === value :
+                 `${i.lastname} ${i.name}` === value;
+        });
+
+        const sectionVotes = {};
+        filtered.forEach(i => {
+          sectionVotes[i.idSection] = (sectionVotes[i.idSection] || 0) + i.votes;
+        });
+        if (!Object.keys(sectionVotes).length) return;
+
+        const maxVotes = Math.max(...Object.values(sectionVotes));
+        const stops = Object.entries(sectionVotes).map(([id, v]) => [parseInt(id), `hsl(240, 100%, ${100 - (v / maxVotes) * 50}%)`]);
+
+        const idList = Object.keys(sectionVotes).map(k => parseInt(k));
+
+        map.setPaintProperty("sezioni", "circle-color", ["match", ["get", "id_section"], ...stops.flat(), "#ccc"]);
+        map.setFilter("sezioni", ["in", "id_section", ...idList]);
+
+        document.getElementById("mayor-input").disabled = type !== "mayor";
+        document.getElementById("list-input").disabled = type !== "list";
+        document.getElementById("candidate-input").disabled = type !== "candidate";
+
+        let infoHTML = "";
+        if (type === "mayor") {
+          const totalVotes = filtered.reduce((sum, i) => sum + i.votes, 0);
+          const uniqueSections = new Set(filtered.map(i => i.idSection));
+          infoHTML = `
+            <strong>${value}</strong><br>
+            Voti totali: ${totalVotes}<br>
+            Sezioni votate: ${uniqueSections.size} su ${new Set(allData.map(i => i.idSection)).size}`;
+        } else if (type === "list") {
+          const mayor = filtered[0].supportedmayor;
+          const totalVotes = filtered.reduce((sum, i) => sum + i.votes, 0);
+          const uniqueSections = new Set(filtered.map(i => i.idSection));
+          infoHTML = `
+            <strong>${value}</strong><br>
+            Sindaco: ${mayor}<br>
+            Voti totali: ${totalVotes}<br>
+            Sezioni votate: ${uniqueSections.size} su ${new Set(allData.map(i => i.idSection)).size}`;
+        } else if (type === "candidate" && filtered.length > 0) {
+          currentCandidateId = filtered[0].idCandidate;
+          const item = filtered[0];
+          const totalVotes = filtered.reduce((sum, i) => sum + i.votes, 0);
+          const uniqueSections = new Set(filtered.map(i => i.idSection));
+          const topSections = Object.entries(sectionVotes)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(([id, votes]) => {
+              const perc = ((votes / totalVotes) * 100).toFixed(1);
+              return `Sezione ${id}: ${votes} voti (${perc}%)`;
+            })
+            .join("<br>");
+
+          infoHTML = `
+            <strong>${item.lastname} ${item.name}</strong><br>
+            Lista: ${item.group}<br>
+            Sindaco: ${item.supportedmayor}<br>
+            Voti totali: ${totalVotes}<br>
+            Sezioni votate: ${uniqueSections.size} su ${new Set(allData.map(i => i.idSection)).size}<br><br><strong>Top sezioni:</strong><br>${topSections}`;
+        }
+        candidateInfo.innerHTML = infoHTML;
+      }
+
+      ["mayor", "list", "candidate"].forEach(type => {
+        document.getElementById(`${type}-input`).addEventListener("input", e => {
+          updateMapByFilter(type, e.target.value);
+        });
+      });
+
+      document.getElementById("reset-button").addEventListener("click", () => {
+        currentCandidateId = null;
+        map.setPaintProperty("sezioni", "circle-color", "#ccc");
+        map.setFilter("sezioni", ["!", ["has", "__nonexistent__"]]);
+        ["mayor", "list", "candidate"].forEach(type => {
+          const input = document.getElementById(`${type}-input`);
+          input.value = "";
+          input.disabled = false;
+        });
+        candidateInfo.innerHTML = "";
+      });
+
       map.addSource("sections", { type: "vector", url: "pmtiles://sections.pmtiles" });
       map.addLayer({
         id: "sezioni",
         type: "circle",
         source: "sections",
         "source-layer": "sections",
-        paint: { "circle-color": "#ccc", "circle-opacity": 0.6, "circle-radius": 4 },
+        paint: {
+          "circle-color": "#ccc",
+          "circle-opacity": 0.6,
+          "circle-radius": 4
+        },
         filter: ["!", ["has", "__nonexistent__"]]
       });
-      map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
 
-      const legendControl = new (class {
-        onAdd(map) {
-          this._map = map;
-          this._container = document.createElement('div');
-          this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
-          this._container.innerHTML = `
-            <div id="legend" style="background: rgba(255,255,255,0.9); padding: 10px; font-size: 12px;">
-              <div><span style="display:inline-block;width:20px;height:10px;background:hsl(240, 100%, 75%);"></span> pochi voti</div>
-              <div><span style="display:inline-block;width:20px;height:10px;background:hsl(240, 100%, 50%);"></span> voti medi</div>
-              <div><span style="display:inline-block;width:20px;height:10px;background:hsl(240, 100%, 25%);"></span> molti voti</div>
-            </div>`;
-          return this._container;
-        }
-        onRemove() {
-          this._container.parentNode.removeChild(this._container);
-          this._map = undefined;
-        }
-      })();
-      map.addControl(legendControl, 'bottom-left');
-    });
+      map.on("mousemove", "sezioni", function (e) {
+        map.getCanvas().style.cursor = "pointer";
+        const props = e.features[0].properties;
+        const idSection = parseInt(props.id_section);
 
-    protobuf.load("preferences_candidates.proto").then(root => {
-      const Msg = root.lookupType("Preferences_candidatesList");
-      return fetch("preferences_candidates.pbf")
-        .then(res => res.arrayBuffer())
-        .then(buf => {
-          const decoded = Msg.decode(new Uint8Array(buf));
-          allData = decoded.items.filter(item => item.votes > 0);
-          allData.forEach(item => {
-            const cid = item.idCandidate;
-            if (!votesByCandidate[cid]) votesByCandidate[cid] = {};
-            votesByCandidate[cid][item.idSection] = item.votes;
-            candidateMeta[cid] = {
-              id: cid,
-              name: `${item.lastname} ${item.name}`,
-              list: item.group,
-              mayor: item.supportedmayor
-            };
-            uniqueMayors.add(item.supportedmayor);
-            uniqueLists.add(item.group);
-            uniqueCandidates.add(`${item.lastname} ${item.name}`);
+        if (!currentCandidateId || !votesByCandidate[currentCandidateId]) return;
+        const votes = votesByCandidate[currentCandidateId][idSection];
+        if (!votes || votes === 0) return;
+
+        const candidate = candidateMeta[currentCandidateId];
+
+        if (!hoverPopup) {
+          hoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+        }
+
+        hoverPopup
+          .setLngLat(e.lngLat)
+          .setHTML(`
+            <strong>${candidate.name}</strong><br>
+            Lista: ${candidate.list}<br>
+            Sindaco: ${candidate.mayor}<br>
+            Sezione: ${idSection}<br>
+            Voti: ${votes}
+          `)
+          .addTo(map);
+      });
+
+      map.on("mouseleave", "sezioni", () => {
+        map.getCanvas().style.cursor = "";
+        if (hoverPopup) {
+          hoverPopup.remove();
+          hoverPopup = null;
+        }
+      });
+
+      protobuf.load("preferences_candidates.proto").then(root => {
+        const Msg = root.lookupType("Preferences_candidatesList");
+        return fetch("preferences_candidates.pbf")
+          .then(res => res.arrayBuffer())
+          .then(buf => {
+            const decoded = Msg.decode(new Uint8Array(buf));
+            allData = decoded.items.filter(item => item.votes > 0);
+            allData.forEach(item => {
+              const cid = item.idCandidate;
+              if (!votesByCandidate[cid]) votesByCandidate[cid] = {};
+              votesByCandidate[cid][item.idSection] = item.votes;
+              candidateMeta[cid] = {
+                id: cid,
+                name: `${item.lastname} ${item.name}`,
+                list: item.group,
+                mayor: item.supportedmayor
+              };
+              uniqueMayors.add(item.supportedmayor);
+              uniqueLists.add(item.group);
+              uniqueCandidates.add(`${item.lastname} ${item.name}`);
+            });
+            populateInputs();
           });
-          populateInputs();
+      });
+
+      function populateInputs() {
+        ["mayor", "list", "candidate"].forEach(type => {
+          const datalist = document.getElementById(`${type}-datalist`);
+          datalist.innerHTML = "";
+          const values = type === "mayor" ? [...uniqueMayors] : type === "list" ? [...uniqueLists] : [...uniqueCandidates];
+          values.sort().forEach(v => datalist.appendChild(new Option(v, v)));
         });
-    });
-
-    function populateInputs() {
-      ["mayor", "list", "candidate"].forEach(type => {
-        const datalist = document.getElementById(`${type}-datalist`);
-        datalist.innerHTML = "";
-        const values = type === "mayor" ? [...uniqueMayors] : type === "list" ? [...uniqueLists] : [...uniqueCandidates];
-        values.sort().forEach(v => datalist.appendChild(new Option(v, v)));
-      });
-    }
-
-    document.getElementById("reset-button").addEventListener("click", () => {
-      map.setPaintProperty("sezioni", "circle-color", "#ccc");
-      map.setFilter("sezioni", ["!", ["has", "__nonexistent__"]]);
-      ["mayor", "list", "candidate"].forEach(type => {
-        const input = document.getElementById(`${type}-input`);
-        input.value = "";
-        input.disabled = false;
-      });
-      document.getElementById("candidate-info").innerHTML = "";
-    });
-
-    ["mayor", "list", "candidate"].forEach(type => {
-      document.getElementById(`${type}-input`).addEventListener("input", e => {
-        updateMapByFilter(type, e.target.value);
-      });
-    });
-
-    function updateMapByFilter(type, value) {
-      if (!value) return;
-      const filtered = allData.filter(i => {
-        return type === "mayor" ? i.supportedmayor === value :
-               type === "list" ? i.group === value :
-               `${i.lastname} ${i.name}` === value;
-      });
-      const sectionVotes = {};
-      filtered.forEach(i => {
-        sectionVotes[i.idSection] = (sectionVotes[i.idSection] || 0) + i.votes;
-      });
-      if (!Object.keys(sectionVotes).length) return;
-      const maxVotes = Math.max(...Object.values(sectionVotes));
-      const stops = Object.entries(sectionVotes).map(([id, v]) => [parseInt(id), `hsl(240, 100%, ${100 - (v / maxVotes) * 50}%)`]);
-
-      const allSections = new Set(allData.map(i => i.idSection));
-      const idList = Object.keys(sectionVotes).map(k => parseInt(k));
-
-      map.setPaintProperty("sezioni", "circle-color", ["match", ["get", "id_section"], ...stops.flat(), "#ccc"]);
-      map.setFilter("sezioni", ["in", "id_section", ...idList]);
-
-      document.getElementById("mayor-input").disabled = type !== "mayor";
-      document.getElementById("list-input").disabled = type !== "list";
-      document.getElementById("candidate-input").disabled = type !== "candidate";
-
-      const infoBox = document.getElementById("candidate-info");
-
-      window.flyToSection = function(id) {
-        const features = map.querySourceFeatures("sections", { sourceLayer: "sections" });
-        const feature = features.find(f => f.properties.id_section == id);
-        if (feature) {
-          const [lng, lat] = feature.geometry.coordinates;
-          map.flyTo({ center: [lng, lat], zoom: 15 });
-        }
-      };
-      if (type === "candidate" && filtered.length > 0) {
-        const item = filtered[0];
-        const totalVotes = filtered.reduce((sum, i) => sum + i.votes, 0);
-        const uniqueSections = new Set(filtered.map(i => i.idSection));
-        const topSections = Object.entries(sectionVotes)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 3)
-          .map(([id, votes]) => {
-            const perc = ((votes / totalVotes) * 100).toFixed(1);
-            return `<a href="#" onclick="flyToSection(${id}); return false;">Sezione ${id}</a>: ${votes} voti (${perc}%)`;
-          })
-          .join("<br>");
-
-        infoBox.innerHTML = `
-          <strong>${item.lastname} ${item.name}</strong><br>
-          Lista: ${item.group}<br>
-          Sindaco: ${item.supportedmayor}<br>
-          Voti totali: ${totalVotes}<br>
-          Sezioni votate: ${uniqueSections.size} su ${new Set(allData.map(i => i.idSection)).size}<br><br><strong>Top sezioni:</strong><br>${topSections}
-        `;
-      } else {
-        infoBox.innerHTML = "";
       }
-    }
+    });
   </script>
 </body>
 </html>
