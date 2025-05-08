@@ -1,14 +1,15 @@
 syntax = "proto3";
 message Preferences_candidates {
-  int32 id_section = 1;
-  int32 id_district = 2;
-  string district = 3;
-  string supportedmayor = 4;
-  string group = 5;
-  string lastname = 6;
-  string name = 7;
-  string nickname = 8;
-  int32 votes = 9;
+  string id_candidate = 1;
+  int32 id_section = 2;
+  int32 id_district = 3;
+  string district = 4;
+  string supportedmayor = 5;
+  string group = 6;
+  string lastname = 7;
+  string name = 8;
+  string nickname = 9;
+  int32 votes = 10;
 }
 
 message Preferences_candidatesList {
