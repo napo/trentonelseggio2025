@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Trento nel seggio 2025</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap -->
+  <link href="assets/vendor/bootstrap/bootstrap.min.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="assets/vendor/maplibre-gl/maplibre-gl.css" crossorigin="anonymous">
+  <script src="assets/vendor/maplibre-gl/maplibre-gl.js" crossorigin="anonymous"></script>
+  <script src="assets/vendor/pmtiles/pmtiles.js"></script>
+
+  <!-- ProtobufJS -->
+  <script src="assets/vendor/protobufjs/protobuf.min.js"></script>
+
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    header, footer {
+      background-color: #f8f9fa;
+      padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    footer {
+      border-top: 1px solid #ddd;
+      border-bottom: none;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+    #sidebar-container {
+      display: flex;
+      flex-direction: column;
+      width: 40px;
+      background: #e9ecef;
+      border-right: 1px solid #ccc;
+      z-index: 20;
+    }
+    #sidebar-toggle {
+      background: #007bff;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 10px 0;
+      cursor: pointer;
+    }
+    #sidebar {
+      width: 300px;
+      background: #f8f9fa;
+      border-right: 1px solid #ddd;
+      overflow-y: auto;
+      padding: 1rem;
+      transition: margin-left 0.3s ease;
+      z-index: 10;
+    }
+    #sidebar.hidden {
+      margin-left: -300px;
+    }
+    #map {
+      flex-grow: 1;
+      height: 100%;
+      transition: margin-left 0.3s ease;
+    }
+    input:disabled {
+      background-color: #e9ecef;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="d-flex justify-content-between align-items-center">
+      <h1 class="h5 mb-0">Sistema di visualizzazione sezioni elettorali</h1>
+      <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#infoModal">Menu</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="sidebar-container">
+      <button id="sidebar-toggle">☰</button>
+    </div>
+
+    <div id="sidebar">
+      <h2 class="h6 mt-3">Mappa sezioni per candidato</h2>
+      <div id="section-count" class="alert alert-info small d-none"></div>
+      <div class="mb-3">
+        <label class="form-label">Scrivi il nome (sindaco, lista o candidato):</label>
+        <input type="text" id="mayor-input" class="form-control mt-2" list="mayor-datalist" placeholder="Cerca sindaco...">
+        <datalist id="mayor-datalist"></datalist>
+
+        <input type="text" id="list-input" class="form-control mt-2" list="list-datalist" placeholder="Cerca lista...">
+        <datalist id="list-datalist"></datalist>
+
+        <input type="text" id="candidate-input" class="form-control mt-2" list="candidate-datalist" placeholder="Cerca candidato...">
+        <datalist id="candidate-datalist"></datalist>
+
+        <button id="reset-button" class="btn btn-secondary mt-2">Reset</button>
+      </div>
+    </div>
+
+    <div id="map"></div>
+  </main>
+
+  <footer>
+    <small>&copy; 2025 Comune di Trento - Progetto Mappa Voto per Sezioni</small>
+  </footer>
+
+  <!-- Modal -->
+  <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="infoModalLabel">Informazioni</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+        </div>
+        <div class="modal-body">
+          Ciao Mondo!
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script>
+    const sidebar = document.getElementById("sidebar");
+    const mapDiv = document.getElementById("map");
+    const sidebarToggle = document.getElementById("sidebar-toggle");
+
+    sidebarToggle.addEventListener("click", () => {
+      const isHidden = sidebar.classList.toggle("hidden");
+      mapDiv.style.marginLeft = isHidden ? "0" : "300px";
+    });
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
