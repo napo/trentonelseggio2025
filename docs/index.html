@@ -5,6 +5,32 @@
         <meta charset="UTF-8" />
         <title>Trento nel seggio 2025</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+        <meta name="description" content="Visualizzazione interattiva dei risultati elettorali di Trento 2025: scegli un candidato sindaco, una lista o un candidato consigliere e scopri dove ha ricevuto voti, sezione per sezione.">
+        <meta name="keywords" content="trento, elezioni comunali 2025, voto, preferenze, mappa, sezioni elettorali, candidati, sindaco, liste">
+    
+        <!-- Favicons -->
+        <link href="assets/img/favicon-96x96.png" rel="icon">
+        <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+    
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://trentonelseggio2025.it/" />
+        <meta property="og:title" content="Trento nel seggio 2025" />
+        <meta property="og:description" content="Visualizzazione interattiva dei risultati elettorali di Trento 2025: scegli un candidato sindaco, una lista o un candidato consigliere e scopri dove ha ricevuto voti, sezione per sezione." />
+        <meta property="og:image" content="assets/images/preview.jpg" />
+    
+        <!-- Twitter -->
+        <meta property="twitter:card" content="assets/images/preview.jpg" />
+        <meta property="twitter:url" content="https://trentonelseggio2025.it/" />
+        <meta property="twitter:title" content="Trento nel seggio 2025" />
+        <meta property="twitter:description" content="Visualizzazione interattiva dei risultati elettorali di Trento 2025: scegli un candidato sindaco, una lista o un candidato consigliere e scopri dove ha ricevuto voti, sezione per sezione." />
+        <meta property="twitter:image" content="assets/images/preview.jpg" />
+    
+
+
+
         <link href="assets/vendor/bootstrap/bootstrap.min.css" rel="stylesheet" />
         <link rel="stylesheet" href="assets/vendor/maplibre-gl/maplibre-gl.css" crossorigin="anonymous">
         <script src="assets/vendor/maplibre-gl/maplibre-gl.js" crossorigin="anonymous"></script>
@@ -29,16 +55,20 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
                     </div>
                     <div class="modal-body">
+                        <h1>Trento nel seggio 2025</h1>
+                        <p>Visualizzazione interattiva dei risultati elettorali di Trento 2025: scegli un candidato sindaco, una lista o un candidato consigliere e scopri dove ha ricevuto voti, sezione per sezione.</p>
                         <p><strong>Trento nel seggio 2025</strong> è un progetto ideato da <em><a href='https://github.com/napo'>Maurizio Napolitano</a></em>
                             con finalità esclusivamente <strong>personali</strong>. Nasce per esplorare nuove modalità
                             di visualizzazione dei dati elettorali, puntando su accessibilità e interattività.</p>
                         <p>Il codice sorgente è disponibile su <a href="https://github.com/napo/trentonelseggio2025" target="_blank">GitHub</a>.</p>
 
                         <p>I dati utilizzati provengono dal sito ufficiale del Comune di Trento:<br>
-                            <a href="https://www.comune.trento.it/Aree-tematiche/Statistiche-e-dati-elettorali/Elettorale/Elezioni-amministrative-4-maggio-2025/Affluenze-e-risultati-elezioni-amministrative-4-maggio-2025"
+                            <a href="https://www.comune.trento.it/Aree-tematiche/Statistiche-e-dati-elettorali/Elettorale/Elezioni-amministrative-4-maggio-2025/Affluenze-e-risultati-elezioni-amministrative-4-maggio-2025/I-dati-nelle-circoscrizioni"
                                 target="_blank">
                                 https://www.comune.trento.it/.../Affluenze-e-risultati-elezioni-amministrative-4-maggio-2025
                             </a>
+                            <br/>
+                            E dalla sezione <A href="https://www.comune.trento.it/Aree-tematiche/Open-Data">Open Data</A> in particolare per <a href=""https://www.comune.trento.it/Aree-tematiche/Cartografia/Download/Civici-con-Sezione-Elettorale">i numeri civici con sezione elettorale</a> e <a href="https://www.comune.trento.it/Aree-tematiche/Cartografia/Download/Circoscrizioni">le circoscrizioni</a>
                         </p>
 
                         <p>Le <strong>sezioni elettorali</strong> rappresentano l’insieme degli indirizzi civici
@@ -60,6 +90,7 @@
                             delle <strong>circoscrizioni</strong>.</p>
                         <p>Le aree in cui <strong>non sono stati espressi voti</strong> per la selezione corrente
                             <strong>non vengono mostrate</strong> sulla mappa.</p>
+                            <p><strong>per una nuova interrogazione premere il bottone RESET</strong></p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>

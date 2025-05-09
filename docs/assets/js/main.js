@@ -332,3 +332,11 @@
         });
       });
 
+      window.addEventListener('load', () => {
+        const infoModal = new bootstrap.Modal(document.getElementById('infoModal'));
+        infoModal.show();
+      
+        setTimeout(() => {
+          infoModal.hide();
+        }, 100000);
+      });
