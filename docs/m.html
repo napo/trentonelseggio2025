@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="it">
+
+    <head>
+        <meta charset="UTF-8" />
+        <title>Trento nel seggio 2025</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script>
+            (function () {
+                const ua = navigator.userAgent.toLowerCase();
+                const isAndroid = ua.includes("android");
+                const isChrome = ua.includes("chrome") && ua.includes("mobile");
+
+                if (isAndroid && !isChrome) {
+                    // URL della tua app (personalizza se necessario)
+                    const currentUrl = window.location.href.replace(/^https?:\/\//, '');
+
+                    // Costruzione intent URL per aprire in Chrome
+                    const intentUrl = `intent://${currentUrl}#Intent;scheme=https;package=com.android.chrome;end`;
+
+                    // Prova a reindirizzare su Chrome
+                    window.location = intentUrl;
+
+                    // Dopo 1 secondo, se l’utente non è stato reindirizzato (Chrome non installato), mostra messaggio
+                    setTimeout(() => {
+                        document.body.innerHTML = `
+                    <div style="padding:2rem; font-family: sans-serif;">
+                      <h2>Attenzione</h2>
+                      <p>Questa applicazione è stata creata per essere accessibile via <strong>desktop</strong>.</p>
+                      <p>Su dispositivi mobili funziona perfettamente su tutti i browser <strong>esclusi</strong> quelli predefiniti per Android (come il browser Samsung o WebView).</p>
+                      <p>Per favore, apri questa pagina con <strong>Google Chrome</strong> o un browser compatibile.</p>
+                      <p><a href="https://play.google.com/store/apps/details?id=com.android.chrome" target="_blank">Scarica Chrome da Google Play</a></p>
+                    </div>
+                  `;
+                    }, 1000);
+                }
+            })();
+        </script>
+
+        <meta name="description"
+            content="Visualizzazione interattiva dei risultati elettorali di Trento 2025: scegli un candidato sindaco, una lista o un candidato consigliere e scopri dove ha ricevuto voti, sezione per sezione.">
+        <meta name="keywords"
+            content="trento, elezioni comunali 2025, voto, preferenze, mappa, sezioni elettorali, candidati, sindaco, liste">
+
+        <!-- Favicons -->
+        <link href="assets/img/favicon-96x96.png" rel="icon">
+        <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://trentonelseggio2025.it/" />
+        <meta property="og:title" content="Trento nel seggio 2025" />
+        <meta property="og:description"
+            content="Visualizzazione interattiva dei risultati elettorali di Trento 2025: scegli un candidato sindaco, una lista o un candidato consigliere e scopri dove ha ricevuto voti, sezione per sezione." />
+        <meta property="og:image" content="assets/images/preview.jpg" />
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="assets/images/preview.jpg" />
+        <meta property="twitter:url" content="https://trentonelseggio2025.it/" />
+        <meta property="twitter:title" content="Trento nel seggio 2025" />
+        <meta property="twitter:description"
+            content="Visualizzazione interattiva dei risultati elettorali di Trento 2025: scegli un candidato sindaco, una lista o un candidato consigliere e scopri dove ha ricevuto voti, sezione per sezione." />
+        <meta property="twitter:image" content="assets/images/preview.jpg" />
+
+
+
+
+        <link href="assets/vendor/bootstrap/bootstrap.min.css" rel="stylesheet" />
+        <link rel="stylesheet" href="assets/vendor/maplibre-gl/maplibre-gl.css" crossorigin="anonymous">
+        <script src="assets/vendor/maplibre-gl/maplibre-gl.js" crossorigin="anonymous"></script>
+        <script src="assets/vendor/pmtiles/pmtiles.js"></script>
+        <script src="assets/vendor/protobufjs/protobuf.min.js"></script>
+        <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+        <link href="https://fonts.googleapis.com" rel="preconnect">
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Poppins:wght@400;700&family=Raleway:wght@400;700&display=swap"
+            rel="stylesheet">
+        <link href="assets/css/style.css" rel="stylesheet">
+    </head>
+
+    <body>
+        <!-- Modal Informazioni -->
+        <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="infoModalLabel">Informazioni su Trento nel seggio 2025</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h1>Trento nel seggio 2025</h1>
+                        <p>Visualizzazione interattiva dei risultati elettorali di Trento 2025: scegli un candidato
+                            sindaco, una lista o un candidato consigliere e scopri dove ha ricevuto voti, sezione per
+                            sezione.</p>
+                        <p><strong>Trento nel seggio 2025</strong> è un progetto ideato da <em><a
+                                    href='https://github.com/napo'>Maurizio Napolitano</a></em>
+                            con finalità esclusivamente <strong>personali</strong>. Nasce per esplorare nuove modalità
+                            di visualizzazione dei dati elettorali, puntando su accessibilità e interattività.</p>
+                        <p>Il codice sorgente è disponibile su <a href="https://github.com/napo/trentonelseggio2025"
+                                target="_blank">GitHub</a>.</p>
+
+                        <p>I dati utilizzati provengono dal sito ufficiale del Comune di Trento:<br>
+                            <a href="https://www.comune.trento.it/Aree-tematiche/Statistiche-e-dati-elettorali/Elettorale/Elezioni-amministrative-4-maggio-2025/Affluenze-e-risultati-elezioni-amministrative-4-maggio-2025/I-dati-nelle-circoscrizioni"
+                                target="_blank">
+                                https://www.comune.trento.it/.../Affluenze-e-risultati-elezioni-amministrative-4-maggio-2025
+                            </a>
+                            <br />
+                            E dalla sezione <A href="https://www.comune.trento.it/Aree-tematiche/Open-Data">Open
+                                Data</A> in particolare per <a href=""
+                                https://www.comune.trento.it/Aree-tematiche/Cartografia/Download/Civici-con-Sezione-Elettorale">i
+                                numeri civici con sezione elettorale</a> e <a
+                                href="https://www.comune.trento.it/Aree-tematiche/Cartografia/Download/Circoscrizioni">le
+                                circoscrizioni</a>
+                        </p>
+
+                        <p>Le <strong>sezioni elettorali</strong> rappresentano l’insieme degli indirizzi civici
+                            assegnati a ciascuna sezione. Questo non implica che tutte le persone residenti in quelle
+                            aree abbiano votato: si tratta di una ricostruzione delle zone di riferimento, basata sui
+                            dati pubblici disponibili.</p>
+
+                        <p>Il conteggio dei voti a candidati sindaci e alle liste si basa esclusivamente sulle
+                            <strong>preferenze espresse per i candidati di lista</strong>. Sono quindi esclusi dal
+                            calcolo i voti dati direttamente al solo sindaco o alla sola lista senza preferenze.
+                        </p>
+
+                        <hr>
+
+                        <h5>Come si usa</h5>
+                        <p>È possibile selezionare un <strong>candidato sindaco</strong>, una <strong>lista</strong>
+                            oppure un <strong>candidato consigliere</strong>: la mappa mostrerà automaticamente le
+                            <strong>sezioni elettorali</strong> in cui sono stati ricevuti voti.
+                        </p>
+                        <p>Con un clic, è possibile <strong>invertire la visualizzazione</strong> passando alla mappa
+                            delle <strong>circoscrizioni</strong>.</p>
+                        <p>Le aree in cui <strong>non sono stati espressi voti</strong> per la selezione corrente
+                            <strong>non vengono mostrate</strong> sulla mappa.
+                        </p>
+                        <p><strong>per una nuova interrogazione premere il bottone RESET</strong></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal Cookie Policy -->
+        <div class="modal fade" id="cookieModal" tabindex="-1" aria-labelledby="cookieModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cookieModalLabel">Cookie Policy</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Questo sito <strong>non fa uso di cookie</strong>, né propri né di terze parti.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <header>
+            <div class="d-flex justify-content-between align-items-center px-3">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="assets/images/logo.png" alt="Logo Trento" style="height: 32px;">
+                    <h1 class="h5 mb-0">Trento nel seggio 2025</h1>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#infoModal">ℹ️
+                        Info</button>
+                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#cookieModal">Cookie
+                        Policy</button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="sidebar">
+                <small>Elezioni comunali di Trento 04/05/2025</small>
+                <h2 class="h6 mt-3">Distribuzione geografiche delle preferenze</h2>
+                <div class="mb-3">
+                    <label class="form-label">Scrivi il nome (sindaco, lista o candidato):</label>
+                    <input type="text" id="mayor-input" class="form-control mt-2" list="mayor-datalist"
+                        placeholder="Cerca sindaco...">
+                    <datalist id="mayor-datalist"></datalist>
+                    <input type="text" id="list-input" class="form-control mt-2" list="list-datalist"
+                        placeholder="Cerca lista...">
+                    <datalist id="list-datalist"></datalist>
+                    <input type="text" id="candidate-input" class="form-control mt-2" list="candidate-datalist"
+                        placeholder="Cerca candidato...">
+                    <datalist id="candidate-datalist"></datalist>
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="radio" name="view-mode" id="radio-sezioni" value="sezioni"
+                            checked>
+                        <label class="form-check-label" for="radio-sezioni">Sezioni</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="view-mode" id="radio-circoscrizioni"
+                            value="circoscrizioni">
+                        <label class="form-check-label" for="radio-circoscrizioni">Circoscrizioni</label>
+                    </div>
+                    <button id="reset-button" class="btn btn-secondary mt-2">Reset</button>
+                </div>
+                <div id="candidate-info" class="alert alert-light small"></div>
+                <button id="scroll-to-map-btn" style="display: none;"
+                    onclick="document.getElementById('map').scrollIntoView({ behavior: 'smooth' });">
+                    Vai alla mappa ↓
+                </button>
+            </div>
+            <div id="map"></div>
+            <div id="legend" class="bg-light border p-2 rounded shadow-sm small"
+                style="position: absolute; bottom: 10px; right: 10px; z-index: 30;">
+                <strong>Quantità voti</strong><br>
+                <div><span
+                        style="display: inline-block; width: 12px; height: 12px; background: hsl(240, 100%, 90%); margin-right: 5px;"></span>
+                    Pochi</div>
+                <div><span
+                        style="display: inline-block; width: 12px; height: 12px; background: hsl(240, 100%, 75%); margin-right: 5px;"></span>
+                    Medi</div>
+                <div><span
+                        style="display: inline-block; width: 12px; height: 12px; background: hsl(240, 100%, 50%); margin-right: 5px;"></span>
+                    Alti</div>
+            </div>
+        </main>
+        <footer>
+            <small>Open Data del Comune di Trento - Mappa: OpenFreeMap &copy; OpenMapTiles Data from <A
+                    href="https://www.openstreetmap.org/copyright">OpenStreetMap</A> - autore <a
+                    href="https://www.linkedin.com/in/napolnx/" target="_new">napo</a></small>
+        </footer>
+        <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+        <script src="assets/js/main.js"></script>
+
+    </body>
+
+</html>
