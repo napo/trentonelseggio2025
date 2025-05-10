@@ -1,2 +1,5 @@
-# trentonelseggio2025
- La mappa interattiva del voto alle elezioni comunali di Trento al 04/05/2025 per ogni sezione elettorale
+# Trento nel seggio 2025
+Visualizzazione interattiva dei risultati elettorali delle elezioni comunali di Trento del 04 maggio 2025: scegli un candidato sindaco, una lista o un candidato consigliere e scopri dove ha ricevuto voti, sezione per sezione.
+
+
+![](https://trentonelseggio2025.it/assets/images/preview.jpg)
