@@ -46,8 +46,8 @@
     <meta name="description" content="Visualizzazione interattiva dei risultati elettorali di Trento 2025: scegli un candidato sindaco, una lista o un candidato consigliere e scopri dove ha ricevuto voti, sezione per sezione.">
     <meta name="keywords" content="trento, elezioni comunali 2025, voto, preferenze, mappa, sezioni elettorali, candidati, sindaco, liste">
 
-    <link href="assets/img/favicon-96x96.png" rel="icon">
-    <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+    <link href="assets/images/favicon-96x96.png" rel="icon">
+    <link href="assets/images/apple-touch-icon.png" rel="apple-touch-icon">
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://trentonelseggio2025.it/" />
@@ -197,12 +197,12 @@
                         <label class="form-check-label" for="radio-circoscrizioni">Circoscrizioni</label>
                     </div>
                     <button id="reset-button" class="btn btn-secondary mt-2">Reset</button>
-                </div>
-                <div id="candidate-info" class="alert alert-light small"></div>
-                <button id="scroll-to-map-btn" style="display: none;"
+                    <button id="scroll-to-map-btn" class="btn btn-secondary mt-2" style="display: none;"
                     onclick="document.getElementById('map').scrollIntoView({ behavior: 'smooth' });">
                     Vai alla mappa ↓
                 </button>
+                </div>
+                <div id="candidate-info" class="alert alert-light small"></div>
             </div>
             <div id="map"></div>
         </main>

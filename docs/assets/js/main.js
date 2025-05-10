@@ -345,13 +345,13 @@ class LegendControl {
   onAdd(map) {
     this._map = map;
     this._container = document.createElement('div');
-    this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group legend-control';
+    this._container.className = 'maplibregl-ctrl legend-maplibre bg-light border p-2 rounded shadow-sm small';
     this._container.innerHTML = `
-          <div><strong>Quantità voti</strong></div>
-          <div><span style="display:inline-block;width:12px;height:12px;background:hsl(240, 100%, 90%);margin-right:5px;"></span>Pochi</div>
-          <div><span style="display:inline-block;width:12px;height:12px;background:hsl(240, 100%, 75%);margin-right:5px;"></span>Medi</div>
-          <div><span style="display:inline-block;width:12px;height:12px;background:hsl(240, 100%, 50%);margin-right:5px;"></span>Alti</div>
-      `;
+      <strong>Quantità voti</strong><br>
+      <div><span style="display: inline-block; width: 12px; height: 12px; background: hsl(240, 100%, 90%); margin-right: 5px;"></span> Pochi</div>
+      <div><span style="display: inline-block; width: 12px; height: 12px; background: hsl(240, 100%, 75%); margin-right: 5px;"></span> Medi</div>
+      <div><span style="display: inline-block; width: 12px; height: 12px; background: hsl(240, 100%, 50%); margin-right: 5px;"></span> Alti</div>
+    `;
     return this._container;
   }
 
@@ -361,5 +361,68 @@ class LegendControl {
   }
 }
 
-// Dopo l'inizializzazione della mappa
-map.addControl(new LegendControl(), 'bottom-right');
+// Dopo l'inizializzazione della mappa:
+map.addControl(new LegendControl(), 'bottom-left');
+
+class ResetControl {
+  onAdd(map) {
+    this._map = map;
+
+    // Contenitore personalizzato
+    this._container = document.createElement("div");
+    this._container.className = "maplibregl-ctrl maplibregl-ctrl-group";
+    //this._container.style.position = "absolute";
+    this._container.style.bottom = "20px";
+    this._container.style.left = "50%";
+    this._container.style.transform = "translateX(-50%)";
+    this._container.style.zIndex = "999";
+    this._container.style.display = "none"; // nascosto di default
+
+    // Bottone
+    this._btn = document.createElement("button");
+    this._btn.type = "button";
+    this._btn.className = "maplibregl-ctrl-icon";
+    this._btn.setAttribute("aria-label", "Fa una nuova interrogazione");
+    this._btn.setAttribute("title", "Fa una nuova interrogazione");
+    this._btn.innerText = "↺"; // oppure puoi usare "Reset" o altra emoji
+    this._btn.style.fontSize = "1.2rem";
+    this._btn.style.padding = "0.4rem 0.6rem";
+    this._btn.style.background = "#007bff";
+    this._btn.style.color = "#fff";
+    this._btn.style.border = "none";
+    this._btn.style.borderRadius = "4px";
+    this._btn.style.cursor = "pointer";
+
+    this._btn.onclick = () => {
+      document.getElementById("reset-button").click();
+      document.getElementById("sidebar").scrollIntoView({ behavior: "smooth" });
+    };
+
+    this._container.appendChild(this._btn);
+    map.getContainer().appendChild(this._container); // attacca fuori da addControl
+
+    return this._container;
+  }
+
+  onRemove() {
+    this._container.parentNode.removeChild(this._container);
+    this._map = undefined;
+  }
+
+  setVisible(visible) {
+    this._container.style.display = visible ? "block" : "none";
+  }
+}
+
+
+const resetControl = new ResetControl();
+map.addControl(resetControl, 'bottom-right');
+
+
+const scrollBtn = document.getElementById("scroll-to-map-btn");
+const observer = new MutationObserver(() => {
+  const visible = scrollBtn.style.display !== "none";
+  resetControl.setVisible(visible);
+});
+observer.observe(scrollBtn, { attributes: true, attributeFilter: ['style'] });
+resetControl.setVisible(scrollBtn.style.display !== "none");
